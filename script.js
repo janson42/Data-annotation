@@ -62,8 +62,8 @@ function displayImage() {
     const image2 = document.getElementById('image2');
 
     if (currentIndex < csvData.length) {
-        const image1Url = csvData[currentIndex]['image_url_1'];
-        const image2Url = csvData[currentIndex]['image_url_2'];
+        const image1Url = csvData[currentIndex]['original_image_url'];
+        const image2Url = csvData[currentIndex]['aigc_image_url'];
 
         image1.src = image1Url;
         image2.src = image2Url;
