@@ -129,7 +129,7 @@ function updateOptions(rowData) {
     } else if (gsbValue === "B") {
         bbButton.classList.add('selected');
     }
-
+    document.getElementById('current_line').innerText = 'Current line is ' + currentIndex.toString();
 //    // Set the button text to show the values
 //    pass0Button.textContent = "0";
 //    pass1Button.textContent = "1";
