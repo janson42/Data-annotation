@@ -38,22 +38,59 @@ function jumpToRow() {
     displayImage();
 }
 
+//// Function to parse the CSV content
+//function parseCSV(content) {
+//    const lines = content.trim().split('\n');
+//    const headers = lines[0].split(',');
+//
+//    const data = [];
+//    for (let i = 1; i < lines.length; i++) {
+//        const values = lines[i].split(',');
+//        const record = {};
+//        for (let j = 0; j < headers.length; j++) {
+//            record[headers[j]] = values[j];
+//        }
+//        data.push(record);
+//    }
+//
+//    return data;
+//}
 // Function to parse the CSV content
 function parseCSV(content) {
     const lines = content.trim().split('\n');
-    const headers = lines[0].split(',');
+    const headers = parseCSVLine(lines[0]);
 
     const data = [];
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',');
+        const values = parseCSVLine(lines[i]);
         const record = {};
         for (let j = 0; j < headers.length; j++) {
-            record[headers[j]] = values[j];
+            record[headers[j]] = values[j] || "";
         }
         data.push(record);
     }
 
     return data;
+}
+
+function parseCSVLine(line) {
+    const result = [];
+    let startValueIndex = 0;
+    let inQuote = false;
+
+    for (let i = 0; i < line.length; i++) {
+        if (line.charAt(i) === '"') {
+            inQuote = !inQuote;
+        }
+        if (line.charAt(i) === ',' && !inQuote) {
+            const value = line.substring(startValueIndex, i).trim();
+            result.push(value.charAt(0) === '"' ? value.slice(1, -1) : value);
+            startValueIndex = i + 1;
+        }
+    }
+    result.push(line.substring(startValueIndex).trim());
+
+    return result;
 }
 
 // Function to display images and data
@@ -129,6 +166,7 @@ function updateOptions(rowData) {
     } else if (gsbValue === "B") {
         bbButton.classList.add('selected');
     }
+
     document.getElementById('current_line').innerText = 'Current line is ' + currentIndex.toString();
 //    // Set the button text to show the values
 //    pass0Button.textContent = "0";
@@ -150,15 +188,32 @@ function toggleGSB(value) {
     updateOptions(csvData[currentIndex]);
 }
 
+//// Function to save the annotated data to a new file and download
+//function saveCSVData() {
+//    if (csvData.length === 0) {
+//        alert('Please load CSV data first.');
+//        return;
+//    }
+//    const csvContent = convertToCSV(csvData);
+//    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+//
+//    const link = document.createElement('a');
+//    link.setAttribute('href', URL.createObjectURL(blob));
+//    link.setAttribute('download', 'annotated_data.csv');
+//    link.style.display = 'none';
+//    document.body.appendChild(link);
+//    link.click();
+//
+//    document.getElementById('message').innerText = 'Data saved and downloaded successfully.';
+//}
 // Function to save the annotated data to a new file and download
 function saveCSVData() {
     if (csvData.length === 0) {
         alert('Please load CSV data first.');
         return;
     }
-
     const csvContent = convertToCSV(csvData);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
 
     const link = document.createElement('a');
     link.setAttribute('href', URL.createObjectURL(blob));
@@ -170,11 +225,29 @@ function saveCSVData() {
     document.getElementById('message').innerText = 'Data saved and downloaded successfully.';
 }
 
+//// Function to convert data to CSV format
+//function convertToCSV(data) {
+//    const headers = Object.keys(data[0]);
+//    const rows = data.map(record => headers.map(header => record[header]).join(','));
+//    return [headers.join(','), ...rows].join('\r\n');
+//}
+
+//// Function to convert data to CSV format
+//function convertToCSV(data) {
+//    const headers = Object.keys(data[0]);
+//    const rows = data.map(record =>
+//        headers.map(header => `"${record[header].toString().replace(/"/g, '""')}"`).join(',')
+//    );
+//    return [headers.join(','), ...rows].join('\n');
+//}
+
 // Function to convert data to CSV format
 function convertToCSV(data) {
     const headers = Object.keys(data[0]);
-    const rows = data.map(record => headers.map(header => record[header]).join(','));
-    return [headers.join(','), ...rows].join('\n');
+    const rows = data.map(record =>
+        headers.map(header => `"${record[header].toString().replace(/"/g, '""')}"`).join(',')
+    );
+    return [headers.join(','), ...rows].join('\r\n');
 }
 
 // Add event listener to the pass and GSB select options
